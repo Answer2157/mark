@@ -257,3 +257,4 @@ ls
 - 查看mysql容器，判断是否有数据卷挂载
 - 基于宿主机目录实现MySQL数据目录、配置文件、初始化脚本的挂载（查阅官方镜像文档)
 
+docker insepect mysql
