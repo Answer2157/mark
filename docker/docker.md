@@ -255,6 +255,36 @@ ls
 需求：
 
 - 查看mysql容器，判断是否有数据卷挂载
+
 - 基于宿主机目录实现MySQL数据目录、配置文件、初始化脚本的挂载（查阅官方镜像文档)
 
-docker insepect mysql
+  - 挂载/root/mysql/data到容器内的/var/ib/mysq目录
+
+  - 挂载/root/mysql/init到容器内的/docker-entrypoint-initdb.d目录，携带提前准备好的SQL脚本
+
+  - 挂载/root/mysql/conf到容器内的/etc/mysql/conf.d目录，携带提前准备好的
+
+    配置文件
+
+~~~bash
+docker run -d \
+--name mysql \
+-p 3306:3306 \
+-e TZ=Asia/Shanghai \
+-e MYSQL_ROOT_PASSWORD=123 \
+-v /root/mysql/data:/var/lib/mysql \
+-v /root/mysql/init:/docker-entrypoint-initdb.d \
+-v /root/mysql/conf:/etc/mysql/conf.d \
+mysql
+~~~
+
+
+
+提示：
+
+- 在执行docker run命令时，使用-v本地目录：容器内目录可以完成本地目录挂载
+- 本地目录必须以“/”或"/"开头，如果直接以名称开头，会被识别为数据卷而非本地目录
+  - -v mysql:var/Iib/mysql会被识别为一个数据卷叫mysql
+  - -v/mysql:var/Iib/mysql会被识别为当前目录下的mysql目录
+
+### 自定义镜像
