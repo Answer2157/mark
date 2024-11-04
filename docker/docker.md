@@ -288,3 +288,53 @@ mysql
   - -v/mysql:var/Iib/mysql会被识别为当前目录下的mysql目录
 
 ### 自定义镜像
+
+镜像就是包含了应用程序、程序运行的系统函数库、运行配置等文件的文件包。构建镜像的过程其实就是把上述文件打包的过程。
+
+![image-20241104163108564](./docker/image-20241104163108564.png)
+
+**Dockerfile**就是一个文本文件，其中包含一个个的**指令**(Instruction)，用指令来说明要执行什么操作来构建镜像。将来Docker可以根据Dockerfile帮我们构建镜像。常见指令如下：
+
+| 指令       | 说明                                         | 示例                                                         |
+| ---------- | -------------------------------------------- | ------------------------------------------------------------ |
+| FROM       | 指定基础镜像                                 | FROM centos:6                                                |
+| ENV        | 设置环境变量，可在后面指令使用               | ENV key value                                                |
+| COPY       | 拷贝本地文件到镜像的指定目录                 | COPY ./jrell.tar.gz/temp                                     |
+| RUN        | 执行linux的shell命令，一般是安装过程的命令   | RUN tar -zxvf /tmp/jrell.tar.gz && EXPORTS path = /temp/jrell:$path |
+| EXPOSE     | 指定容器运行时监听的端口，是给镜像使用者看的 | EXPOSE 8080                                                  |
+| ENTRYPOINT | 镜像中应用的启动命令，容器运行时调用         | ENTRYPOINT java -jar xx.jar                                  |
+
+更新详细语法说明，请参考官网文档：https://docs.docker.com/engine/reference/builder
+
+可以选择基于Ubuntu基础镜像，利用Dockerfile描述镜像结构
+
+~~~bash
+# 指定基础镜像
+FROM ubuntu:16:04
+# 配置环境变量，JDK的安装目录、容器内时区
+ENV JAVA_DIR=/user/local
+# 拷贝jdk和java项目
+COPY ./jdk8.tar.gz $JAVA_DIR/
+COPY ./docker-demo.jar /temp/app.jar
+# 安装JDK
+RUN cd $JAVA_DIR \ 
+&& tar -xf ./jdk8.tar.gz \ 
+&& mv ./jdk1.8.0_144 ./java8
+# 配置环境变量
+ENV JAVA_HOME=$JAVA_DIR/java8
+ENV PATH=$PATH:$JAVA_HOME/bin
+# 入口，java项目的启动命令
+ENTRYPOINT ["java","-jar","/app.jar"]
+~~~
+
+也可以直接基于JDK为基础镜像，省略前面的步骤：
+
+~~~bash
+# 基础镜像
+FROM openjdk:11.0-jre-buster
+# 拷贝jar包
+COPY docker-demo.jar /app.jar
+# 入口
+ENTRYPOINT ["java","-jar","/app.jar"]
+~~~
+
