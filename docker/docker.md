@@ -338,3 +338,43 @@ COPY docker-demo.jar /app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 ~~~
 
+当编写好了Dockerfile，可以利用下面命令来构建镜像：
+
+~~~bash
+docker build -t myImage:1.0 .
+~~~
+
+- -t : 是给镜像起名，格式依然是repository:tag的格式，不指定tag时，默认为latest
+- . :是指定Dockerfile所在目录，如果在当前目录，则指定为"."
+
+![image-20241105180624019](./docker/image-20241105180624019.png)
+
+### 网络
+
+默认情况下，所有容器都是以bridge方式连接到Docker的一个虚拟网桥上：
+
+![image-20241105213421976](./docker/image-20241105213421976.png)
+
+加入自定义网络的容器才可以通过容器名互相访问，Docker的网络操作命令如下：
+
+| 命令                      | 说明                     | 文档地址 |
+| ------------------------- | ------------------------ | -------- |
+| docker network create     | 创建一个网络             |          |
+| docker network ls         | 查看所有网络             |          |
+| docker network rm         | 删除指定网络             |          |
+| docker network prune      | 清除未使用的网络         |          |
+| docker network connect    | 使指定容器连接加入某网络 |          |
+| docker network disconnect | 使指定容器连接离开某网络 |          |
+| docker network inspect    | 查看网络详细信息         |          |
+
+~~~bash
+# 创建一个网桥
+docker network create answer
+# 将容器加入网桥，如将名mysql的容器加入名为answer的网桥
+docker network connect answer mysql
+
+
+# 可以选择在创建容器时加入网桥
+docker run -d --name demo -p 8080:8080 --network answer docker-demo
+~~~
+
