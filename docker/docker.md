@@ -373,7 +373,6 @@ docker network create answer
 # 将容器加入网桥，如将名mysql的容器加入名为answer的网桥
 docker network connect answer mysql
 
-
 # 可以选择在创建容器时加入网桥
 docker run -d --name demo -p 8080:8080 --network answer docker-demo
 ~~~
@@ -382,22 +381,103 @@ docker run -d --name demo -p 8080:8080 --network answer docker-demo
 
 ### （一）部署Java应用
 
-
-
-
-
-
-
-
+~~~bash
+# 1. 打成jar包
+# 2. 填写dockerfile文件
+# 3. 然后一起丢入到ubuntu中
+# 4. 构建镜像
+docker build -t campus . #jar包必须和dockerfile在一个文件夹
+# 5. 部署应用
+docker run -d --name campus -p 8080:8080 --network answer campus 
+# 如果说数据库用到的是容器内的，需要保证在同一网段
+~~~
 
 ### （二）部署前端
 
+需求：创建一个新的nginx容器，将nginx.conf、html目录与容器挂载
+
+~~~bash
+docker run -d  \
+--name nginx  \
+-p 8090:8090  \
+-v /home/answer/nginx/html:/usr/share/nginx/html  \
+-v /home/answer/nginx/nginx.conf:/etc/nginx/nginx.conf  \
+--network answer  \ # 如果容器互联需要在同一个网桥
+nginx
+~~~
+
+### （三）DockerCompose
+
+Docker Compose:通过一个单独的docker-compose.yml模板文件(YAML格式)来定义一组相关联的应用容器，帮
+助我们实现**多个相互关联的Docker容器的快速部署。**
+
+![image-20241106214404766](./docker/image-20241106214404766.png)
+
+docker-compose.yml文件示例
+
+~~~bash
+  services:
+    mysql:
+      image: mysql
+      container_name: mysql
+      ports:
+        - "3306:3306"
+      environment:
+        TZ: Asia/Shanghai
+        MYSQL_ROOT_PASSWORD: 123
+      volumes:
+          - "/home/answer/mysql/conf:/etc/mysql/conf.d"
+          - "/home/answer/mysql/data:/var/lib/mysql"
+          - "/home/answer/mysql/init:/docker-entrypoint-initdb.d"
+      networks:
+        - answer
+    campus:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: campus
+      ports:
+        - "8080:8080"
+      networks:
+        - answer
+      depends_on:
+        - mysql
+    nginx:
+      image: nginx
+      container_name: nginx
+      ports:
+        - "8089:8089"
+      volumes:
+        - "/home/answer/nginx/nginx.conf:/etc/nginx/nginx.conf"
+        - "/home/answer/nginx/html:/usr/share/nginx/html"
+      depends_on:
+        - campus
+      networks:
+        - answer
+  networks:
+    answer:
+      name: campus_net
+~~~
 
 
 
+docker compose的命令格式如下：
 
+~~~bash
+docker compose [OPTIONS] [COMMAND]
+~~~
 
+| 类型     | 参数或指令 | 说明                         |
+| -------- | ---------- | ---------------------------- |
+| Options  | -f         | 指定compose文件的路径和名称  |
+| Options  | -p         | 指定project名称              |
+| Commands | up         | 创建并启动所有service容器    |
+| Commands | down       | 停止并移动所有容器、网络     |
+| Commands | ps         | 列出所有启动的容器           |
+| Commands | logs       | 查看指定容器的日志           |
+| Commands | stop       | 停止容器                     |
+| Commands | start      | 启动容器                     |
+| Commands | restart    | 重启容器                     |
+| Commands | top        | 查看运行的进程               |
+| Commands | exec       | 在指定的运行中容器中执行命令 |
 
-
-
-### （三）部署项目
