@@ -378,3 +378,26 @@ docker network connect answer mysql
 docker run -d --name demo -p 8080:8080 --network answer docker-demo
 ~~~
 
+## 五、项目部署
+
+### （一）部署Java应用
+
+
+
+
+
+
+
+
+
+### （二）部署前端
+
+
+
+
+
+
+
+
+
+### （三）部署项目
